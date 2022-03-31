@@ -23,7 +23,7 @@
     {% for post in posts.items %}
         <article class="media post-img">
             {% if post.post_image != None %}
-            <img class="content-section-img image" src="{{ url_for('static', filename='background_pics/'+post.post_image) }}"></img>
+                <img id="{{ post.id }}bg_image" class="content-section-img image" src="{{ url_for('static', filename='background_pics/'+post.post_image) }}"></img>
             {% endif %}
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}">
             <div class="media-body">
@@ -72,6 +72,9 @@
                  </svg>
                 </div>
                 <div class="reply-count">{{ post.replies }}</div>
+                {% if post.post_image != None %}
+                <h6 id="{{ post.id }}bg" class="overlay" onclick="overlayImg(this.id)">Предпросмотр</h6>
+                {% endif %}
                 <a class="reply" href="{{ url_for('reply', post_id=post.id) }}">Reply</a>
             </div>
             </div>
