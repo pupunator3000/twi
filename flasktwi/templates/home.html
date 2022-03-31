@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if current_user.is_authenticated and route == 'home' %}
+    <div class="content-section-img">
+        {% if current_user.profile_background != 'None' %}
+            <img class="content-section-img image" src="{{ url_for('static', filename='background_pics/'+current_user.profile_background) }}"></img>
+        {% endif %}
+        <div class="media">
+        <img class="rounded-circle account-img" src="{{ url_for('static', filename='profile_pics/' + current_user.image) }}">
+        <div class="media-body">
+            <h2 class="account-heading">{{ current_user.username }}</h2>
+        </div>
+        </div>
+        <form method="POST" action="" enctype="multipart/form-data">
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Account Info</legend>
+                <div class="form-group">
+                    {{ current_user.about }}
+                </div>
+        </form>
+    </div>
+    {% endif %}
+    {% for post in posts.items %}
+        <article class="media post-img">
+            {% if post.post_image != None %}
+            <img class="content-section-img image" src="{{ url_for('static', filename='background_pics/'+post.post_image) }}"></img>
+            {% endif %}
+            <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}">
+            <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-link" href="{{ url_for('user_page', user_id=post.user_id) }}">{{ post.author.username }}</a>
+                <small class="text-muted">{{ post.date_posted.strftime('%h-%d-%Y') }}</small>
+            </div>
+            <h2><a class="article-title" href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.content }}</p>
+            <div  class="like-container">
+                {% if current_user.is_authenticated and route == 'main_page' %}
+                    {% if post.id in liked %}
+                        <div id="{{ post.id }}" class="heart-like-button liked" onClick="reply_click(this.id)"></div>
+                    {% else %}
+                         <div id="{{ post.id }}" class="heart-like-button" onClick="reply_click(this.id)"></div>
+                    {% endif %}
+                {% else %}
+                    <div id="{{ post.id }}" class="heart-like-button"></div>
+                {% endif %}
+                <div id="{{ post.id }}s"class="like-count">{{ post.likes }}</div>
+                <div class="like-conrainer bubble">
+                    <svg
+                    width="35px"
+                    height="30px"
+                    viewBox="0 0 40 30"
+                    version="1.1"
+                    id="SVGRoot"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:svg="http://www.w3.org/2000/svg">
+                   <defs
+                      id="defs2060" />
+                   <g
+                      id="layer1">
+                     <ellipse
+                        style="fill:#716dc6;fill-opacity:1;stroke:#716dc6;stroke-width:0.545417;stroke-opacity:0.992157"
+                        id="path1164"
+                        ry="10.542132"
+                        rx="17.166622"
+                        cy="12.924581"
+                        cx="19.71133" />
+                     <path
+                        style="fill:#716dc6;fill-opacity:1;stroke:#716dc6;stroke-width:0.810364px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                        d="M 8.0795443,19.799511 3.8542263,26.600455 13.09012,22.14439 Z"
+                        id="path1345" />
+                   </g>
+                 </svg>
+                </div>
+                <div class="reply-count">{{ post.replies }}</div>
+                <a class="reply" href="{{ url_for('reply', post_id=post.id) }}">Reply</a>
+            </div>
+            </div>
+        </article>
+    {% endfor %}
+    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+        {% if posts.page == page_num %}
+            <a class="btn2 btn2-info mb-4" href="{{ url_for(route, page=page_num) }}">{{ page_num }}</a>
+        {% else %}
+            <a class="btn2 btn-outline-info mb-4" href="{{ url_for(route, page=page_num) }}">{{ page_num }}</a>
+        {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+        {% endfor %}
+
+{% endblock content %}

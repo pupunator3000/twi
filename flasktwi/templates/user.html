@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+
+ <div class="content-section-img">
+    {% if user.profile_background != 'None' %}
+        <img class="content-section-img image" src="{{ url_for('static', filename='background_pics/'+user.profile_background) }}"></img>
+    {% endif %}
+   <div class="media">
+      <div class="acc-container">
+         <h2 class="followed-text">{{ user.username }}</h2>
+      <img class="rounded-circle account-img" src="{{ url_for('static', filename='profile_pics/' + user.image) }}">
+   </div>
+     <div class="media-body">
+      <div class="followers-container">
+         <div class="follows-container">
+            <h4 class=".follow-button">Follows {{ followers_count }} users</h4>
+            <div class="followers-images">
+            {% for f_user in followers_list_5 %}
+              <a href="{{ url_for('user_page', user_id=f_user.id) }}">
+              <img class="rounded-circle followed-img" src="{{ url_for('static', filename='profile_pics/' + f_user.image) }}">
+              </a>
+            {% endfor %}
+            </div>
+            {% if followed_count>5 %}
+              <h6 >and {{ followers_count-5 }} other users</h6>
+            {% endif %}
+         </div>
+         <div class="followed-container">
+            <h4 class=".follow-button">Followed by {{ followed_count }} users</h4>
+            <div class="followers-images">
+               {% for f_user in followed_list_5 %}
+                <a href="{{ url_for('user_page', user_id=f_user.id) }}">
+                <img class="rounded-circle followed-img" src="{{ url_for('static', filename='profile_pics/' + f_user.image) }}">
+                </a>
+               {% endfor %}
+            </div>
+            {% if followed_count>5 %}
+              <h6 >and {{ followed_count-5 }} other users</h6>
+            {% endif %}
+         </div>
+      </div>
+   </div>
+   </div>
+        <form method="POST" action="" enctype="multipart/form-data">
+            <fieldset class="form-group">
+              <a class="btn btn-outline-info" href="{{ url_for('follow', user_id=user.id) }}">Follow</a>
+                <legend class="border-bottom mb-4">Account Info</legend>
+                <div class="form-group">
+                    {{ user.about }}
+                </div>
+        </form>
+    </div>
+{% endblock content %}

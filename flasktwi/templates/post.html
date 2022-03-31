@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media content-section">
+        <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-link" href="{{ url_for('user_page', user_id=post.user_id) }}">{{ post.author.username }}</a>
+                <small class="text-muted">{{ post.date_posted.strftime('%h-%d-%Y') }}</small>
+            </div>
+            <h2 class="article-title">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.content }}</p>
+            <div  class="like-container">
+                <div id="{{ post.id }}" class="heart-like-button"></div>
+                <div id="{{ post.id }}s"class="like-count">{{ post.likes }}</div>
+                <a class="reply" href="{{ url_for('reply', post_id=post.id) }}">Reply</a>
+            </div>
+            {% if post.author == current_user %}
+                <div>
+                    <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
+                    <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+    {% for reply in replyes %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + reply.user_replied.image) }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-link" href="{{ url_for('user_page', user_id=reply.user_id) }}">{{ reply.user_replied.username }}</a>
+                    <small class="text-muted">{{ post.date_posted.strftime('%h-%d-%Y') }}</small>
+                </div>
+                <p class="article-content">{{ reply.reply }}</p>
+                {% if reply.user_replied == current_user %}
+                    <div>
+                        <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_reply', reply_id=reply.id , post_id=post.id) }}">Edit</a>
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+    {% endfor %}
+     <!-- Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Are you shure? This will delete post permanently</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+            </form>
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock content %}
