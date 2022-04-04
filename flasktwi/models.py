@@ -46,7 +46,7 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     likes = db.Column(db.Integer, default=0)
     replies = db.Column(db.Integer, default=0)
-    post_image = db.Column(db.String(20), nullable=False, default='None')
+    post_image = db.Column(db.String(20))
     like = db.relationship('Like', backref='posts',cascade="all, delete", lazy=True)
     reply = db.relationship('Reply', backref='replied',cascade="all, delete", lazy=True)
 
@@ -69,6 +69,7 @@ class Reply(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete="CASCADE"))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"))
     reply = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
         return f"Post('{self.id}', '{self.post_id}', '{self.user_id}')"

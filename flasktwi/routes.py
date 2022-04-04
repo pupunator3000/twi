@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flasktwi import app, db, bcrypt
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, null
 from flasktwi.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, ReplyForm
 from flasktwi.models import Post, User, Like, Reply, followers
 from flask_login import login_user, current_user, logout_user, login_required
@@ -11,11 +11,7 @@ import os
 
 def info(): #Очень странное решение (еще непонятно почему на некоторых страницах это остается как типа кэшированная инфа)
     most_liked_posts = Post.query.filter(Post.likes>0).order_by(desc(Post.likes)).limit(2) # Наверное это ок, если пользователей
-    for i in most_liked_posts:
-        print(i)
     most_replied_posts = Post.query.filter(Post.replies>0).order_by(desc(Post.replies)).limit(2) # меньше 100, а вот при больших объемах инфы?
-    for i in most_replied_posts:
-        print(i)
     return (most_liked_posts, most_replied_posts)
 
 
@@ -151,7 +147,7 @@ def new_post():
         if form.post_image.data:
             picture_file = save_background(form.post_image.data)
         else:
-            picture_file = None
+            picture_file = null()
         post = Post(title=form.title.data, content=form.content.data, post_image=picture_file,author=current_user)
         db.session.add(post)
         db.session.commit()
@@ -180,7 +176,7 @@ def update_post(post_id):
                 os.remove(app.root_path+'/static/background_pics/'+post.post_image)
             picture_file = save_background(form.post_image.data)
             current_user.post_image = picture_file
-        post.post_image = picture_file
+            post.post_image = picture_file
         post.title = form.title.data
         post.content = form.content.data
         db.session.commit()
@@ -297,14 +293,22 @@ def like(post_id):
 @app.route('/follow/<int:user_id>')
 def follow(user_id):
     user = User.query.get_or_404(user_id)
+    followers_list_5 = user.followed.limit(5).all()
+    followed_list_5 = user.followers.limit(5).all()
+    followers_count = len(user.followed.all())
+    followed_count = len(user.followers.all())
+    print(current_user.followed.filter(followers.c.followed_id == user.id).count())
     if user.id != current_user.id:
         if current_user.followed.filter(followers.c.followed_id == user.id).count() > 0:
             current_user.followed.remove(user)
+            db.session.commit()
+            print('unfollowed')
             flash(f'You have been unfollowed user {user.username}!', 'success')
         else:
             current_user.followed.append(user)
             db.session.commit()
+            print('followed')
             flash(f'Now you are following user {user.username}!', 'success')
     else:
         flash("Sorry, you can't follow yourself", 'warning')
-    return render_template('user.html', user=user)
+    return redirect(url_for('user_page', user_id=user.id))

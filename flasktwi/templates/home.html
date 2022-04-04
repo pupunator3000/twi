@@ -73,7 +73,7 @@
                 </div>
                 <div class="reply-count">{{ post.replies }}</div>
                 {% if post.post_image != None %}
-                <h6 id="{{ post.id }}bg" class="overlay" onclick="overlayImg(this.id)">Предпросмотр</h6>
+                <h6 id="{{ post.id }}bg" class="overlay" onclick="overlayImg(this.id)">Preview</h6>
                 {% endif %}
                 <a class="reply" href="{{ url_for('reply', post_id=post.id) }}">Reply</a>
             </div>

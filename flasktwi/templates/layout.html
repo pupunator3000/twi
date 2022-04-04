@@ -71,16 +71,16 @@
             <ul class="list-group">
             <h6 class="list-group-item list-group-item-light" style="text-align: center;">Today</h6>
             {% for reply in replies %}
-              <a class="list-group-item list-group-item-light mr-link" href="{{ url_for('post', post_id=reply.id) }}"> {{ reply.title }}</a>
+              <a class="list-group-item list-group-item-light article-title" href="{{ url_for('post', post_id=reply.id) }}"> {{ reply.title }}</a>
             {% endfor %}
 
             <h6 class="list-group-item list-group-item-light" style="text-align: center;">All Time</h6>
               </ul>
-            <h3>Most Popular Posts</h3>
+            <h3>Most Liked Posts</h3>
             <ul class="list-group">
               <h6 class="list-group-item list-group-item-light" style="text-align: center;">Today</h6>
             {% for like in likes %}
-              <a class="list-group-item list-group-item-light mr-link" href="{{ url_for('post', post_id=like.id) }}"> {{ like.title }}</a>
+              <a class="list-group-item list-group-item-light article-title" href="{{ url_for('post', post_id=like.id) }}"> {{ like.title }}</a>
             {% endfor %}
 
             <h6 class="list-group-item list-group-item-light" style="text-align: center;">All Time</h6>
@@ -146,7 +146,6 @@
     
             var img = document.createElement('img');
             img.src = images.src;
-            console.log(img.height > window.innerHeight)
             
             if (img.height > window.innerHeight) {
               var aspect = img.width / img.height;
@@ -166,10 +165,6 @@
             img.style.position = "absolute";
             img.style.left = x + 'px';
             img.style.top = y + 'px';
-            console.log(window.innerWidth)
-            console.log(window.innerHeight)
-            console.log(img.width)
-            console.log(img.height)
           }
   
             imgOverlay.appendChild(img);
