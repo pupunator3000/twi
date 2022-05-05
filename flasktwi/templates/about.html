@@ -3,79 +3,14 @@
 
 
 
-<div class="container2 overlay">
-    <article id="2post" class="media post-img" onclick="overlay(this.id)">
-                
-        <img id="2post_image" class="content-section-img image" src="/static/background_pics/Astra027b8cd531089921.jpg">
+
+    <article class="media post-img">
+
+        <img src="/static/about.jpg">
         
-        <img class="rounded-circle article-img" src="/static/profile_pics/Vega7f3ec8237d8ee227.gif">
-        <div class="media-body">
-        <div class="article-metadata">
-            <a class="mr-link" >Vega</a>
-            <small class="text-muted">Mar-30-2022</small>
-        </div>
-        <h2><a class="article-title">Заглушка для тестов</a></h2>
-        <p class="article-content">Как и другие ссылки</p>
-        <div class="like-container">
-            
-                <div id="3" class="heart-like-button"></div>
-            
-            <div id="3s" class="like-count">0</div>
-            <div class="like-conrainer bubble">
-                <svg width="35px" height="30px" viewBox="0 0 40 30" version="1.1" id="SVGRoot" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-               <defs id="defs2060"></defs>
-               <g id="layer1">
-                 <ellipse style="fill:#716dc6;fill-opacity:1;stroke:#716dc6;stroke-width:0.545417;stroke-opacity:0.992157" id="path1164" ry="10.542132" rx="17.166622" cy="12.924581" cx="19.71133"></ellipse>
-                 <path style="fill:#716dc6;fill-opacity:1;stroke:#716dc6;stroke-width:0.810364px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="M 8.0795443,19.799511 3.8542263,26.600455 13.09012,22.14439 Z" id="path1345"></path>
-               </g>
-             </svg>
-            </div>
-            <div class="reply-count">0</div>
-            <a class="reply" href="/reply/3">Reply</a>
-        </div>
-        </div>
-    </article>
-    </div>
+      </article>
 
-    <script>
-      function overlay(id){
-        var postImg = document.querySelectorAll('.post-img');
-        var images = document.getElementById(id+'_image')
-        var sp2 = document.getElementById(id);
-        var parentDiv=sp2.parentNode;
-  
 
-          var imgOverlay = document.createElement('div');
-          imgOverlay.style.width = window.innerWidth + 'px';
-          imgOverlay.style.height = window.innerHeight + 'px';
-          imgOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-          imgOverlay.style.position = "fixed";
-          imgOverlay.style.left = 0 + 'px';
-          imgOverlay.style.right = 0 + 'px';
-          imgOverlay.style.float = "left";
-          imgOverlay.style.zIndex = '2';
-  
-          var img = document.createElement('img');
-          img.src = images.src;
-  
-          var x = (window.innerWidth - img.width)/2;
-          var y = (window.innerHeight - img.height-100)/2;
-          img.style.position = "absolute";
-          img.style.left = x + 'px';
-          img.style.top = y + 'px';
-
-          imgOverlay.appendChild(img);
-  
-          var sp1 = document.body.appendChild(imgOverlay);
-          parentDiv.insertBefore(sp1, sp2);
-
-          img.addEventListener('click', function(){
-            if(imgOverlay){
-            imgOverlay.parentNode.removeChild(imgOverlay)
-            }
-        });
-      }
-    </script>
 
 
             

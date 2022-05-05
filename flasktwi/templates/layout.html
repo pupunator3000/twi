@@ -39,7 +39,7 @@
                   <img class="rounded-circle avatar-img" src="{{ url_for('static', filename='profile_pics/' + current_user.image) }}">
                 </a>
                 <div class="navbar-nav">
-                <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+                <a class="nav-item nav-link" href="{{ url_for('logout') }}"> ({{ current_user.username }}) Logout</a>
               {% else %}
               <div class="navbar-nav">
                 <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
@@ -68,9 +68,22 @@
         <div class="col-md-4">
           <div class="content-section">
             <h3>Most Popular Posts</h3>
-              <ul class="list-group">
-                <li class="list-group-item list-group-item-light">Today</li>
-                <li class="list-group-item list-group-item-light">All Time</li>
+            <ul class="list-group">
+            <h6 class="list-group-item list-group-item-light" style="text-align: center;">Today</h6>
+            {% for reply in replies %}
+              <a class="list-group-item list-group-item-light article-title" href="{{ url_for('post', post_id=reply.id) }}"> {{ reply.title }}</a>
+            {% endfor %}
+
+            <h6 class="list-group-item list-group-item-light" style="text-align: center;">All Time</h6>
+              </ul>
+            <h3>Most Liked Posts</h3>
+            <ul class="list-group">
+              <h6 class="list-group-item list-group-item-light" style="text-align: center;">Today</h6>
+            {% for like in likes %}
+              <a class="list-group-item list-group-item-light article-title" href="{{ url_for('post', post_id=like.id) }}"> {{ like.title }}</a>
+            {% endfor %}
+
+            <h6 class="list-group-item list-group-item-light" style="text-align: center;">All Time</h6>
               </ul>
           </div>
         </div>
@@ -81,7 +94,7 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script type=text/javascript>
@@ -108,6 +121,65 @@
             }
         }
   </script>
+      <script>
+        function overlayImg(id){ //получает id поста, проверка есть ли в нем картинка, открытие оверлея
+          var postImg = document.querySelectorAll('.post-img'); //поиск css класса post-img (переменная для insertBefore)
+          var images = document.getElementById(id+'_image'); //получение ссылки на изображение по айди
+          console.log(id)
+          if (images == null) {
+            
+          } else {
+          var elements = document.getElementsByClassName('site-header');
+          var sp2 = elements[0];
+          var parentDiv=sp2.parentNode;
+    
+  
+            var imgOverlay = document.createElement('div');
+            imgOverlay.style.width = window.innerWidth + 'px';
+            imgOverlay.style.height = window.innerHeight + 'px';
+            imgOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+            imgOverlay.style.position = "fixed";
+            imgOverlay.style.left = 0 + 'px';
+            imgOverlay.style.right = 0 + 'px';
+            imgOverlay.style.top = 0 + 'px';
+            imgOverlay.style.zIndex = '9999';
+    
+            var img = document.createElement('img');
+            img.src = images.src;
+            
+            if (img.height > window.innerHeight) {
+              var aspect = img.width / img.height;
+              var y = 0;
+              var x = (window.innerWidth - (window.innerHeight*aspect))/2;
+              img.style.position = "absolute";
+              img.style.left = x + 'px';
+              img.style.top = y + 'px';
+              img.style.height = window.innerHeight  + "px";
+              img.style.width = window.innerHeight*aspect + "px";
+            }
+            else {
 
+
+            var x = (window.innerWidth - img.width)/2;
+            var y = (window.innerHeight - img.height)/2;
+            img.style.position = "absolute";
+            img.style.left = x + 'px';
+            img.style.top = y + 'px';
+          }
+  
+            imgOverlay.appendChild(img);
+    
+            var sp1 = document.body.appendChild(imgOverlay);
+            parentDiv.insertBefore(sp1, sp2);
+  
+            img.addEventListener('click', function(){
+              if(imgOverlay){
+              imgOverlay.parentNode.removeChild(imgOverlay)
+              }
+          });
+        }
+      }
+      </script>
+</script>
 </body>
 </html>

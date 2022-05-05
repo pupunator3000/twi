@@ -9,6 +9,11 @@
             </div>
             <h2 class="article-title">{{ post.title }}</a></h2>
             <p class="article-content">{{ post.content }}</p>
+            {% if post.post_image != None %}
+                <a href="{{ url_for('static', filename='background_pics/' + post.post_image) }}" >
+                <img id="image" class="post_picture" src="{{ url_for('static', filename='background_pics/' + post.post_image) }}">.
+                </a>
+            {% endif %}
             <div  class="like-container">
                 <div id="{{ post.id }}" class="heart-like-button"></div>
                 <div id="{{ post.id }}s"class="like-count">{{ post.likes }}</div>
@@ -28,7 +33,7 @@
             <div class="media-body">
                 <div class="article-metadata">
                     <a class="mr-link" href="{{ url_for('user_page', user_id=reply.user_id) }}">{{ reply.user_replied.username }}</a>
-                    <small class="text-muted">{{ post.date_posted.strftime('%h-%d-%Y') }}</small>
+                    <small class="text-muted">{{ reply.date_posted.strftime('%h-%d-%Y at %H:%M') }}</small>
                 </div>
                 <p class="article-content">{{ reply.reply }}</p>
                 {% if reply.user_replied == current_user %}
@@ -58,4 +63,16 @@
         </div>
     </div>
     </div>
+    <script>
+        var img = document.getElementById('image');
+        var imageClass = document.querySelector('.post_picture');
+        var mediaClass = document.querySelector('.media-body');
+        console.log(mediaClass.offsetWidth);
+        if (mediaClass.offsetWidth < 400){
+        var aspect = img.width / img.height;
+        var x = mediaClass.offsetWidth;
+        imageClass.style.width = (x-(Math.floor(x/10))) + 'px';
+        imageClass.style.height = mediaClass.offsetHeight;
+        }
+    </script>
 {% endblock content %}

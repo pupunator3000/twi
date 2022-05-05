@@ -1,11 +1,18 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flasktwi import app, db, bcrypt
+from sqlalchemy import select, desc, null
 from flasktwi.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, ReplyForm
 from flasktwi.models import Post, User, Like, Reply, followers
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 import secrets
 import os
+
+
+def info(): #Очень странное решение (еще непонятно почему на некоторых страницах это остается как типа кэшированная инфа)
+    most_liked_posts = Post.query.filter(Post.likes>0).order_by(desc(Post.likes)).limit(2) # Наверное это ок, если пользователей
+    most_replied_posts = Post.query.filter(Post.replies>0).order_by(desc(Post.replies)).limit(2) # меньше 100, а вот при больших объемах инфы?
+    return (most_liked_posts, most_replied_posts)
 
 
 @app.route('/')
@@ -20,7 +27,7 @@ def main_page():
                 liked_status.append(check.post_id)
 
 
-    return render_template('home.html', posts=posts, liked = liked_status, route="main_page")
+    return render_template('home.html', posts=posts, liked = liked_status, route="main_page", likes=info()[0], replies=info()[1])
 
 
 @app.route('/home')
@@ -29,7 +36,7 @@ def home():
     page = request.args.get('page', 1, type=int)
     if current_user.is_authenticated:
         posts = Post.query.filter_by(author=current_user).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-        return render_template('home.html', posts=posts, image=current_user.image, route="home")
+        return render_template('home.html', posts=posts, image=current_user.image, route="home", likes=info()[0], replies=info()[1])
     else:
         return render_template('home.html', posts=posts, route='home')
 
@@ -68,7 +75,7 @@ def login():
 @app.route('/about')
 def about():
     if current_user.is_authenticated:
-        return render_template('about.html', title='About', image=current_user.image)
+        return render_template('about.html', title='About', image=current_user.image, likes=info()[0], replies=info()[1])
     else:
         return render_template('about.html', title='About')
 
@@ -129,7 +136,7 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
         form.about.data = current_user.about
-    return render_template('account.html', title='Account', form=form)
+    return render_template('account.html', title='Account', form=form, likes=info()[0], replies=info()[1])
 
 
 @app.route('/post/new', methods=['POST', 'GET'])
@@ -140,7 +147,7 @@ def new_post():
         if form.post_image.data:
             picture_file = save_background(form.post_image.data)
         else:
-            picture_file = None
+            picture_file = null()
         post = Post(title=form.title.data, content=form.content.data, post_image=picture_file,author=current_user)
         db.session.add(post)
         db.session.commit()
@@ -153,7 +160,7 @@ def new_post():
 def post(post_id):
     post = Post.query.get_or_404(post_id)
     reply = Reply.query.filter_by(post_id=post.id).all()
-    return render_template('post.html', title=post.title, post=post, replyes=reply)
+    return render_template('post.html', title=post.title, post=post, replyes=reply, likes=info()[0], replies=info()[1])
 
 
 @app.route('/post/<int:post_id>/update', methods=['POST', 'GET'])
@@ -169,7 +176,7 @@ def update_post(post_id):
                 os.remove(app.root_path+'/static/background_pics/'+post.post_image)
             picture_file = save_background(form.post_image.data)
             current_user.post_image = picture_file
-        post.post_image = picture_file
+            post.post_image = picture_file
         post.title = form.title.data
         post.content = form.content.data
         db.session.commit()
@@ -178,7 +185,7 @@ def update_post(post_id):
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
-    return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
+    return render_template('create_post.html', title='Update Post', form=form, legend='Update Post', likes=info()[0], replies=info()[1])
 
 
 @app.route('/reply/<int:post_id>/<int:reply_id>/update', methods=['POST', 'GET'])
@@ -195,7 +202,7 @@ def update_reply(reply_id, post_id):
         return redirect(url_for('post', post_id=post_id))
     elif request.method == 'GET':
         form.content.data = reply.reply
-    return render_template('reply_update.html', title='Update Post', form=form, legend='Update Post', reply=reply)
+    return render_template('reply_update.html', title='Update Post', form=form, legend='Update Post', reply=reply, likes=info()[0], replies=info()[1])
 
 
 @app.route('/reply/<int:post_id>', methods=['POST', 'GET'])
@@ -250,7 +257,7 @@ def user_page(user_id):
     if current_user == user.id:
         return url_for('account')
     else:
-        return render_template('user.html', user=user, followers_list_5=followers_list_5, followed_list_5=followed_list_5, followers_count=followers_count, followed_count=followed_count)
+        return render_template('user.html', user=user, followers_list_5=followers_list_5, followed_list_5=followed_list_5, followers_count=followers_count, followed_count=followed_count, likes=info()[0], replies=info()[1])
 
 
 @app.route('/post/<int:post_id>/like/')
@@ -286,14 +293,22 @@ def like(post_id):
 @app.route('/follow/<int:user_id>')
 def follow(user_id):
     user = User.query.get_or_404(user_id)
+    followers_list_5 = user.followed.limit(5).all()
+    followed_list_5 = user.followers.limit(5).all()
+    followers_count = len(user.followed.all())
+    followed_count = len(user.followers.all())
+    print(current_user.followed.filter(followers.c.followed_id == user.id).count())
     if user.id != current_user.id:
         if current_user.followed.filter(followers.c.followed_id == user.id).count() > 0:
             current_user.followed.remove(user)
+            db.session.commit()
+            print('unfollowed')
             flash(f'You have been unfollowed user {user.username}!', 'success')
         else:
             current_user.followed.append(user)
             db.session.commit()
+            print('followed')
             flash(f'Now you are following user {user.username}!', 'success')
     else:
         flash("Sorry, you can't follow yourself", 'warning')
-    return render_template('user.html', user=user)
+    return redirect(url_for('user_page', user_id=user.id))
