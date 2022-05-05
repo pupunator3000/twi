@@ -9,10 +9,10 @@ import secrets
 import os
 
 
-def info(): #Очень странное решение (еще непонятно почему на некоторых страницах это остается как типа кэшированная инфа)
-    most_liked_posts = Post.query.filter(Post.likes>0).order_by(desc(Post.likes)).limit(2) # Наверное это ок, если пользователей
-    most_replied_posts = Post.query.filter(Post.replies>0).order_by(desc(Post.replies)).limit(2) # меньше 100, а вот при больших объемах инфы?
-    return (most_liked_posts, most_replied_posts)
+def info():
+    most_liked_posts = Post.query.filter(Post.likes>0).order_by(desc(Post.likes)).limit(2)
+    most_replied_posts = Post.query.filter(Post.replies>0).order_by(desc(Post.replies)).limit(2)
+    return most_liked_posts, most_replied_posts
 
 
 @app.route('/')
@@ -25,9 +25,9 @@ def main_page():
             check = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
             if check:
                 liked_status.append(check.post_id)
-
-
-    return render_template('home.html', posts=posts, liked = liked_status, route="main_page", likes=info()[0], replies=info()[1])
+    print(liked_status)
+    return render_template('home.html', posts=posts, liked=liked_status, route="main_page", likes=info()[0],
+                           replies=info()[1])
 
 
 @app.route('/home')
@@ -35,10 +35,10 @@ def main_page():
 def home():
     page = request.args.get('page', 1, type=int)
     if current_user.is_authenticated:
-        posts = Post.query.filter_by(author=current_user).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-        return render_template('home.html', posts=posts, image=current_user.image, route="home", likes=info()[0], replies=info()[1])
-    else:
-        return render_template('home.html', posts=posts, route='home')
+        posts = Post.query.filter_by(author=current_user).order_by(Post.date_posted.desc()).paginate(page=page,
+                                                                                                     per_page=5)
+        return render_template('home.html', posts=posts, image=current_user.image, route="home", likes=info()[0],
+                               replies=info()[1])
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -75,7 +75,8 @@ def login():
 @app.route('/about')
 def about():
     if current_user.is_authenticated:
-        return render_template('about.html', title='About', image=current_user.image, likes=info()[0], replies=info()[1])
+        return render_template('about.html', title='About', image=current_user.image, likes=info()[0],
+                               replies=info()[1])
     else:
         return render_template('about.html', title='About')
 
@@ -158,9 +159,15 @@ def new_post():
 
 @app.route('/post/<int:post_id>')
 def post(post_id):
+    liked_status = []
     post = Post.query.get_or_404(post_id)
     reply = Reply.query.filter_by(post_id=post.id).all()
-    return render_template('post.html', title=post.title, post=post, replyes=reply, likes=info()[0], replies=info()[1])
+    check = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
+    if check:
+        liked_status.append(check.post_id)
+    print(liked_status)
+    return render_template('post.html', title=post.title, post=post, replyes=reply, likes=info()[0], replies=info()[1],
+                            liked=liked_status)
 
 
 @app.route('/post/<int:post_id>/update', methods=['POST', 'GET'])
@@ -172,7 +179,7 @@ def update_post(post_id):
     form = PostForm()
     if form.validate_on_submit():
         if form.post_image.data:
-            if post.post_image != None:
+            if post.post_image is not None:
                 os.remove(app.root_path+'/static/background_pics/'+post.post_image)
             picture_file = save_background(form.post_image.data)
             current_user.post_image = picture_file
@@ -185,7 +192,8 @@ def update_post(post_id):
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
-    return render_template('create_post.html', title='Update Post', form=form, legend='Update Post', likes=info()[0], replies=info()[1])
+    return render_template('create_post.html', title='Update Post', form=form, legend='Update Post', likes=info()[0],
+                           replies=info()[1])
 
 
 @app.route('/reply/<int:post_id>/<int:reply_id>/update', methods=['POST', 'GET'])
@@ -202,7 +210,8 @@ def update_reply(reply_id, post_id):
         return redirect(url_for('post', post_id=post_id))
     elif request.method == 'GET':
         form.content.data = reply.reply
-    return render_template('reply_update.html', title='Update Post', form=form, legend='Update Post', reply=reply, likes=info()[0], replies=info()[1])
+    return render_template('reply_update.html', title='Update Post', form=form, legend='Update Post', reply=reply,
+                           likes=info()[0], replies=info()[1])
 
 
 @app.route('/reply/<int:post_id>', methods=['POST', 'GET'])
@@ -249,15 +258,24 @@ def delete_reply(reply_id):
 
 @app.route('/user/<int:user_id>', methods=['GET'])
 def user_page(user_id):
+    follow_button = False
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.filter_by(author=User.query.filter_by(id=user_id).first()).order_by(Post.date_posted.desc()).paginate(page=page,
+                                                                                                     per_page=5)
     user = User.query.get_or_404(user_id)
     followers_list_5 = user.followed.limit(5).all()
     followed_list_5 = user.followers.limit(5).all()
     followers_count = len(user.followed.all())
     followed_count = len(user.followers.all())
+    if user.followers.filter_by(id=current_user.id).first():
+        follow_button = True
+    print(follow_button)
     if current_user == user.id:
         return url_for('account')
     else:
-        return render_template('user.html', user=user, followers_list_5=followers_list_5, followed_list_5=followed_list_5, followers_count=followers_count, followed_count=followed_count, likes=info()[0], replies=info()[1])
+        return render_template('user.html', user=user, posts=posts, followers_list_5=followers_list_5,
+                               followed_list_5=followed_list_5, followers_count=followers_count,
+                               followed_count=followed_count, likes=info()[0], replies=info()[1], button=follow_button)
 
 
 @app.route('/post/<int:post_id>/like/')
@@ -286,17 +304,13 @@ def like(post_id):
     else:
         abort(400)
     db.session.commit()
-    data = { post_id : likes_count }
+    data = {post_id : likes_count}
     return data
 
 
 @app.route('/follow/<int:user_id>')
 def follow(user_id):
     user = User.query.get_or_404(user_id)
-    followers_list_5 = user.followed.limit(5).all()
-    followed_list_5 = user.followers.limit(5).all()
-    followers_count = len(user.followed.all())
-    followed_count = len(user.followers.all())
     print(current_user.followed.filter(followers.c.followed_id == user.id).count())
     if user.id != current_user.id:
         if current_user.followed.filter(followers.c.followed_id == user.id).count() > 0:
